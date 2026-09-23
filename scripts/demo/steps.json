@@ -1,0 +1,14 @@
+[
+  {
+    "prompt": "a castle on that hill in the distance",
+    "cmd": "npm run -s nc -- log --run \"$R\" \"A castle for the far hill. Finding one that fits this world\" && npm run -s nc -- search \"low poly castle\" --max-faces 60000 --count 6 --run \"$R\" && npm run -s nc -- log --run \"$R\" \"A classic stone castle with blue roofs and flags, about 22 m tall\" && npm run -s nc -- make \"stone castle\" --id castle --kind building --height 22 --from sketchfab:827e3eae661c48419d2616e2d7739952 --at=-49,-49 --force --run \"$R\" && sleep 3 && npm run -s nc -- log --run \"$R\" --done \"A stone castle now stands on the far hill\" --focus castle"
+  },
+  {
+    "prompt": "make the red dragon circle above the castle",
+    "cmd": "npm run -s nc -- log --run \"$R\" \"Moving the dragon's flight path over the castle, higher and a bit bigger\" && node scripts/demo/apply.mjs dragon && sleep 3 && npm run -s nc -- log --run \"$R\" --done \"The dragon now circles 30 m above the castle\" --focus red-dragon"
+  },
+  {
+    "prompt": "turn it into a golden sunset",
+    "cmd": "npm run -s nc -- log --run \"$R\" \"Lowering the sun and warming the light\" && node scripts/demo/apply.mjs sunset && sleep 4 && npm run -s nc -- log --run \"$R\" --done \"Golden hour, with long shadows across the valley\" --focus castle"
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "id": "pine",
+  "prompt": "pine tree",
+  "kind": "plant",
+  "source": {
+    "type": "sketchfab",
+    "uid": "e52769d653cd4e52a4acff3041961e65",
+    "name": "Pine tree",
+    "author": "Andriy Shekh",
+    "authorUrl": "https://sketchfab.com/sheh5262",
+    "license": "CC Attribution",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "url": "https://sketchfab.com/3d-models/pine-tree-e52769d653cd4e52a4acff3041961e65",
+    "taskIds": {}
+  },
+  "rigType": null,
+  "presets": [],
+  "defaultHeight": 7,
+  "credits": 0,
+  "bones": [],
+  "nodes": [
+    "Sketchfab_model",
+    "4ae49a7eb2b34ec88b7dd664e89d6dd8.fbx",
+    "RootNode",
+    "Leaves/001",
+    "Leaves/001_Leavs_0",
+    "Trank.001",
+    "Trank.001_Trank_0"
+  ],
+  "clips": [],
+  "materials": [
+    "Leavs",
+    "Trank"
+  ],
+  "bbox": {
+    "min": [
+      -109.3678,
+      0,
+      -104.6313
+    ],
+    "max": [
+      107.696,
+      307.7797,
+      112.4871
+    ]
+  },
+  "height": 307.7797,
+  "triangles": 2173,
+  "file": "model.glb",
+  "createdAt": "2026-09-23T14:59:19.701Z"
+}

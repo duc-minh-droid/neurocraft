@@ -1,0 +1,67 @@
+{
+  "id": "castle",
+  "prompt": "stone castle",
+  "kind": "building",
+  "source": {
+    "type": "sketchfab",
+    "uid": "827e3eae661c48419d2616e2d7739952",
+    "name": "Low Poly Castle",
+    "author": "treymill33",
+    "authorUrl": "https://sketchfab.com/treymill33",
+    "license": "CC Attribution",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "url": "https://sketchfab.com/3d-models/low-poly-castle-827e3eae661c48419d2616e2d7739952",
+    "taskIds": {}
+  },
+  "rigType": null,
+  "presets": [],
+  "defaultHeight": 22,
+  "credits": 0,
+  "bones": [],
+  "nodes": [
+    "Sketchfab_model",
+    "Wk05_Castle.obj.cleaner.materialmerger.gles",
+    "Object_2",
+    "Object_3",
+    "Object_4",
+    "Object_5",
+    "Object_6",
+    "Object_7",
+    "Object_8",
+    "Object_9",
+    "Object_10",
+    "Object_11",
+    "Object_12",
+    "Object_13",
+    "Object_14"
+  ],
+  "clips": [],
+  "materials": [
+    "blinn2SG",
+    "blinn3SG",
+    "blinn4SG",
+    "blinn5SG",
+    "blinn6SG",
+    "blinn7SG",
+    "blinn8SG",
+    "initialShadingGroup",
+    "lambert4SG",
+    "lambert6SG"
+  ],
+  "bbox": {
+    "min": [
+      -1264.9746,
+      -0.9536,
+      -2684.4189
+    ],
+    "max": [
+      1264.9746,
+      1831.192,
+      178.7474
+    ]
+  },
+  "height": 1832.1456,
+  "triangles": 21334,
+  "file": "model.glb",
+  "createdAt": "2026-09-23T18:43:47.462Z"
+}

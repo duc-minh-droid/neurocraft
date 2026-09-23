@@ -1,0 +1,6 @@
+export { Entity, type EntityProps } from './Entity'
+export { useEntity } from './entityContext'
+export { Place, Scatter, type PlaceProps, type ScatterProps, type ScatterItem } from './Place'
+export { FlapBones, WiggleBones, SpinNodes } from './behaviors/bones'
+export { PathMotion, Fly, Drive, Swim, Wander, Float, Spin, Sway } from './behaviors/motion'
+export { heightAt, WATER_LEVEL } from '../world/heightfield'

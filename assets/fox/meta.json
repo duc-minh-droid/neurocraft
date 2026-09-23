@@ -1,0 +1,92 @@
+{
+  "id": "fox",
+  "prompt": "fox",
+  "kind": "creature",
+  "source": {
+    "type": "file",
+    "url": ".cache/Fox.glb",
+    "taskIds": {}
+  },
+  "rigType": null,
+  "presets": [],
+  "defaultHeight": 1,
+  "credits": 0,
+  "bones": [
+    "_rootJoint",
+    "b_Root_00",
+    "b_Hip_01",
+    "b_Spine01_02",
+    "b_Spine02_03",
+    "b_Neck_04",
+    "b_Head_05",
+    "b_RightUpperArm_06",
+    "b_RightForeArm_07",
+    "b_RightHand_08",
+    "b_LeftUpperArm_09",
+    "b_LeftForeArm_010",
+    "b_LeftHand_011",
+    "b_Tail01_012",
+    "b_Tail02_013",
+    "b_Tail03_014",
+    "b_LeftLeg01_015",
+    "b_LeftLeg02_016",
+    "b_LeftFoot01_017",
+    "b_LeftFoot02_018",
+    "b_RightLeg01_019",
+    "b_RightLeg02_020",
+    "b_RightFoot01_021",
+    "b_RightFoot02_022"
+  ],
+  "nodes": [
+    "root",
+    "fox",
+    "_rootJoint",
+    "b_Root_00",
+    "b_Hip_01",
+    "b_Spine01_02",
+    "b_Spine02_03",
+    "b_Neck_04",
+    "b_Head_05",
+    "b_RightUpperArm_06",
+    "b_RightForeArm_07",
+    "b_RightHand_08",
+    "b_LeftUpperArm_09",
+    "b_LeftForeArm_010",
+    "b_LeftHand_011",
+    "b_Tail01_012",
+    "b_Tail02_013",
+    "b_Tail03_014",
+    "b_LeftLeg01_015",
+    "b_LeftLeg02_016",
+    "b_LeftFoot01_017",
+    "b_LeftFoot02_018",
+    "b_RightLeg01_019",
+    "b_RightLeg02_020",
+    "b_RightFoot01_021",
+    "b_RightFoot02_022"
+  ],
+  "clips": [
+    "Survey",
+    "Walk",
+    "Run"
+  ],
+  "materials": [
+    "fox_material"
+  ],
+  "bbox": {
+    "min": [
+      -12.5927,
+      -0.1217,
+      -88.095
+    ],
+    "max": [
+      12.5927,
+      78.9072,
+      66.6249
+    ]
+  },
+  "height": 79.0289,
+  "triangles": 576,
+  "file": "model.glb",
+  "createdAt": "2026-09-23T14:55:40.051Z"
+}

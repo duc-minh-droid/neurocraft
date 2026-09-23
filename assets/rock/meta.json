@@ -1,0 +1,49 @@
+{
+  "id": "rock",
+  "prompt": "rock",
+  "kind": "prop",
+  "source": {
+    "type": "sketchfab",
+    "uid": "6e476441b5614231bf4e8de194c418d9",
+    "name": "Stylized lowpoly rock",
+    "author": "Bull studios",
+    "authorUrl": "https://sketchfab.com/dzemalmclaren",
+    "license": "CC Attribution",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "url": "https://sketchfab.com/3d-models/stylized-lowpoly-rock-6e476441b5614231bf4e8de194c418d9",
+    "taskIds": {}
+  },
+  "rigType": null,
+  "presets": [],
+  "defaultHeight": 1.2,
+  "credits": 0,
+  "bones": [],
+  "nodes": [
+    "Sketchfab_model",
+    "24ba5787667942f79bf4e3dd2652bf7c.fbx",
+    "RootNode",
+    "root",
+    "node_id4",
+    "node_id4_Material_52_0"
+  ],
+  "clips": [],
+  "materials": [
+    "Material_52"
+  ],
+  "bbox": {
+    "min": [
+      -0.1454,
+      -0.169,
+      0.0597
+    ],
+    "max": [
+      0.2064,
+      0.1428,
+      0.3814
+    ]
+  },
+  "height": 0.3118,
+  "triangles": 54,
+  "file": "model.glb",
+  "createdAt": "2026-09-23T17:42:40.028Z"
+}
