@@ -4,6 +4,10 @@ import path from 'node:path'
 import type { Plugin, ViteDevServer } from 'vite'
 import { ACTIVITY_EVENT, ACTIVITY_FILE, CHAT_EVENT, type ActivityEvent } from '../shared/activity.ts'
 import { cancelChat, chatStatus, onChatStatus, resetChat, sendChat } from './chat.ts'
+import { WORLD_EVENT } from '../shared/world.ts'
+import { getWorld, onWorldChange, watchWorldFile } from './world.ts'
+import { ASSETS_EVENT } from '../shared/meta.ts'
+import { ASSET_INDEX_FILE, writeAssetIndex } from './assetIndex.ts'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const STATE_DIR = path.join(ROOT, '.neurocraft')
@@ -78,6 +82,22 @@ export function neurocraft(): Plugin {
       startActivityTail(server)
       watchEntities(server)
       onChatStatus((s) => server.ws.send({ type: 'custom', event: CHAT_EVENT, data: s }))
+      const offWorld = onWorldChange((w) => server.ws.send({ type: 'custom', event: WORLD_EVENT, data: w }))
+      const unwatchWorld = watchWorldFile()
+      if (!fs.existsSync(ASSET_INDEX_FILE)) writeAssetIndex()
+      const onAssets = () => {
+        try {
+          server.ws.send({ type: 'custom', event: ASSETS_EVENT, data: JSON.parse(fs.readFileSync(ASSET_INDEX_FILE, 'utf8')) })
+        } catch {
+          /* index mid-write; the next change event will resend */
+        }
+      }
+      fs.watchFile(ASSET_INDEX_FILE, { interval: 300 }, onAssets)
+      server.httpServer?.once('close', () => {
+        offWorld()
+        unwatchWorld()
+        fs.unwatchFile(ASSET_INDEX_FILE, onAssets)
+      })
 
       server.middlewares.use('/__nc', async (req, res) => {
         const url = decodeURIComponent(req.url?.split('?')[0] ?? '').replace(/^\//, '')
@@ -97,6 +117,7 @@ export function neurocraft(): Plugin {
           if (req.method === 'POST' && url === 'chat/cancel') return json(200, { ok: cancelChat() })
           if (req.method === 'POST' && url === 'chat/reset') return json(200, { ok: resetChat() })
         }
+        if (req.method === 'GET' && url === 'world') return json(200, getWorld())
         if (req.method === 'GET' && url === 'activity') {
           res.setHeader('Content-Type', 'application/json')
           return res.end(JSON.stringify(tailLines(ACTIVITY, 600)))

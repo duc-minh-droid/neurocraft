@@ -1,0 +1,47 @@
+{
+  "id": "castle",
+  "prompt": "castle",
+  "kind": "building",
+  "source": {
+    "type": "sketchfab",
+    "uid": "d9e2a603c73a492b8a5619ba1f790e06",
+    "name": "Castle",
+    "author": "VitSh",
+    "authorUrl": "https://sketchfab.com/VitSh",
+    "license": "CC Attribution",
+    "licenseUrl": "http://creativecommons.org/licenses/by/4.0/",
+    "url": "https://sketchfab.com/3d-models/castle-d9e2a603c73a492b8a5619ba1f790e06",
+    "taskIds": {}
+  },
+  "rigType": null,
+  "presets": [],
+  "defaultHeight": 15,
+  "credits": 0,
+  "bones": [],
+  "nodes": [
+    "Sketchfab_model",
+    "Root",
+    "castle",
+    "castle_0"
+  ],
+  "clips": [],
+  "materials": [
+    "castle_mat"
+  ],
+  "bbox": {
+    "min": [
+      -9.7957,
+      14.1389,
+      -1.9328
+    ],
+    "max": [
+      11.1029,
+      37.705,
+      12.4989
+    ]
+  },
+  "height": 23.5661,
+  "triangles": 3104,
+  "file": "model.glb",
+  "createdAt": "2026-09-24T00:03:54.211Z"
+}

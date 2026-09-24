@@ -36,7 +36,9 @@ export function setAutoRotate(on: boolean) {
   cameraDirector.autoRotate = on
 }
 
-export const findEntity = (idOrAsset: string) => entities.get(idOrAsset) ?? [...entities.values()].find((e) => e.asset === idOrAsset)
+/** Entity by id, first copy of a multi-copy world object (`<id>-1`), or first entity using that asset. */
+export const findEntity = (idOrAsset: string) =>
+  entities.get(idOrAsset) ?? entities.get(`${idOrAsset}-1`) ?? [...entities.values()].find((e) => e.asset === idOrAsset)
 
 if (import.meta.env.DEV) Object.assign(window, { __nc: { entities, focus: focusEntity, autoRotate: setAutoRotate } })
 

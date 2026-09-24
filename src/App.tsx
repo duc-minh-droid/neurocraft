@@ -2,6 +2,8 @@ import { Component, Suspense, type ComponentType, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { World } from './world/World'
 import { Hud } from './engine/Hud'
+import { WorldObjects } from './engine/WorldObjects'
+import { useWorld } from './engine/worldState'
 
 const modules = import.meta.glob<{ default: ComponentType }>('./entities/*.tsx', { eager: true })
 
@@ -19,10 +21,12 @@ class EntityBoundary extends Component<{ name: string; children: ReactNode }, { 
 }
 
 export default function App() {
+  const world = useWorld()
   return (
     <>
       <Canvas shadows camera={{ position: [22, 14, 22], fov: 50, near: 0.1, far: 1500 }} dpr={[1, 2]}>
-        <World />
+        <World time={world.time} />
+        <WorldObjects objects={world.objects} />
         {Object.entries(modules).map(([file, mod]) => (
           <EntityBoundary key={file} name={file}>
             <Suspense fallback={null}>

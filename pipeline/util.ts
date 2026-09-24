@@ -5,7 +5,8 @@ import dotenv from 'dotenv'
 
 export const ROOT = path.resolve(import.meta.dirname, '..')
 dotenv.config({ path: path.join(ROOT, '.env'), quiet: true })
-export const ASSETS_DIR = path.join(ROOT, 'assets')
+/** Served statically at /assets/* (public/), so new models never trigger a bundler reload. */
+export const ASSETS_DIR = path.join(ROOT, 'public', 'assets')
 export const CACHE_DIR = path.join(ROOT, '.cache')
 export const STATE_DIR = path.join(ROOT, '.neurocraft')
 export const ENTITIES_DIR = path.join(ROOT, 'src', 'entities')

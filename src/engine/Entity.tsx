@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js'
-import { getAsset } from './assets'
+import { getAsset, useAssets, type Asset } from './assets'
 import { EntityContext } from './entityContext'
 import { entities, report, setState } from './store'
 
@@ -38,8 +38,14 @@ function eachMaterial(root: THREE.Object3D, fn: (m: THREE.MeshStandardMaterial) 
   })
 }
 
-export function Entity({ asset, id = asset, height, scale = 1, rotation = 0, tint, tintStrength = 1, clip, speed = 1, children }: EntityProps) {
-  const { meta, url } = getAsset(asset)
+/** Renders nothing until the asset exists in the registry (e.g. while it is still being downloaded). */
+export function Entity(props: EntityProps) {
+  useAssets()
+  const found = getAsset(props.asset)
+  return found ? <LoadedEntity {...props} meta={found.meta} url={found.url} /> : null
+}
+
+function LoadedEntity({ asset, id = asset, height, scale = 1, rotation = 0, tint, tintStrength = 1, clip, speed = 1, children, meta, url }: EntityProps & Asset) {
   const gltf = useGLTF(url)
   const root = useRef<THREE.Group>(null)
 

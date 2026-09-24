@@ -106,7 +106,12 @@ function useActivityRuns() {
     }
     fetch('/__nc/activity')
       .then((r) => r.json() as Promise<ActivityEvent[]>)
-      .then((events) => !cancelled && onEvents(events))
+      .then((events) => {
+        if (cancelled) return
+        onEvents(events)
+        const recent = [...events].reverse().find((e) => e.focus && Date.now() - e.ts < 20_000)
+        if (recent?.focus) focusEntity(recent.focus)
+      })
       .catch(() => {})
     import.meta.hot?.on(ACTIVITY_EVENT, onLive)
     return () => {

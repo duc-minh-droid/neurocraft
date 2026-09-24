@@ -3,16 +3,17 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { ACTIVITY_FILE, type ActivityEvent, type ChatStatus } from '../shared/activity.ts'
 import { ack, enqueue, listenerState, pendingMessages } from './inbox.ts'
+import { resetAgent, runAgent, type AgentControl } from './agent/agent.ts'
 
 /**
- * In-page chat. Two modes (NC_CHAT_MODE):
- * - relay (default): messages are queued in .neurocraft/inbox.jsonl for the Devin chat that is listening via
- *   `nc inbox --wait`, i.e. the same conversation the user already talks to, with all its context.
+ * In-page chat. Modes (NC_CHAT_MODE):
+ * - agent (default): an LLM with world tools runs inside the dev server (pipeline/agent). Instant edits, no human in the loop.
+ * - relay: messages are queued in .neurocraft/inbox.jsonl for a Devin chat listening via `nc inbox --wait`.
  * - cli: each message runs `devin -p` in bypass mode in a dedicated, resumed session (needs `devin auth login`).
- * Either way the agent follows AGENTS.md and narrates into the activity feed under the message's run.
+ * Every mode narrates into the activity feed under the message's run.
  */
 
-const MODE: ChatStatus['mode'] = process.env.NC_CHAT_MODE === 'cli' ? 'cli' : 'relay'
+const MODE: ChatStatus['mode'] = process.env.NC_CHAT_MODE === 'cli' ? 'cli' : process.env.NC_CHAT_MODE === 'relay' ? 'relay' : 'agent'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const STATE_DIR = path.join(ROOT, '.neurocraft')
@@ -42,7 +43,42 @@ function setStatus(s: Omit<ChatStatus, 'mode'>) {
 }
 
 export const chatStatus = (): ChatStatus =>
-  MODE === 'relay' ? { mode: MODE, busy: false, pending: pendingMessages().length, listener: listenerState().state, run: listenerState().run } : current
+  MODE === 'relay'
+    ? { mode: MODE, busy: false, pending: pendingMessages().length, listener: listenerState().state, run: listenerState().run }
+    : MODE === 'agent'
+      ? { mode: MODE, busy: !!agentJob, run: agentJob?.title, pending: agentQueue.length }
+      : current
+
+/** agent mode: one message at a time, the rest queued. */
+let agentJob: { title: string; control: AgentControl } | null = null
+const agentQueue: { message: string; title: string }[] = []
+
+async function pumpAgent() {
+  if (agentJob) return
+  const next = agentQueue.shift()
+  if (!next) return
+  agentJob = { title: next.title, control: { cancelled: false } }
+  onStatus(chatStatus())
+  try {
+    await runAgent(next.message, next.title, agentJob.control)
+  } catch (e) {
+    console.error('[nc] agent crashed:', e)
+    append({ runTitle: next.title, source: 'agent', status: 'error', message: `Something went wrong: ${e instanceof Error ? e.message : e}` })
+  } finally {
+    agentJob = null
+    onStatus(chatStatus())
+    void pumpAgent()
+  }
+}
+
+function agentSend(message: string) {
+  const title = makeTitle(message)
+  append({ runTitle: title, source: 'user', status: 'start', message })
+  agentQueue.push({ message, title })
+  void pumpAgent()
+  onStatus(chatStatus())
+  return { ok: true }
+}
 
 const makeTitle = (message: string) =>
   `${message.replace(/\s+/g, ' ').trim().slice(0, 70)} · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
@@ -95,6 +131,7 @@ function buildPrompt(message: string, title: string) {
 }
 
 export async function sendChat(message: string): Promise<{ ok: boolean; error?: string }> {
+  if (MODE === 'agent') return agentSend(message)
   if (MODE === 'relay') return relaySend(message)
   if (current.busy) return { ok: false, error: 'Devin is still working on the previous message' }
   const title = makeTitle(message)
@@ -138,6 +175,12 @@ export async function sendChat(message: string): Promise<{ ok: boolean; error?: 
 }
 
 export function cancelChat() {
+  if (MODE === 'agent') {
+    for (const q of agentQueue.splice(0)) append({ runTitle: q.title, source: 'pipeline', status: 'error', message: 'Cancelled' })
+    if (agentJob) agentJob.control.cancelled = true
+    onStatus(chatStatus())
+    return true
+  }
   if (MODE === 'relay') {
     const pending = pendingMessages()
     for (const m of pending) append({ runTitle: m.run, source: 'pipeline', status: 'error', message: 'Removed from the queue before Devin picked it up' })
@@ -152,6 +195,10 @@ export function cancelChat() {
 }
 
 export function resetChat() {
+  if (MODE === 'agent') {
+    resetAgent()
+    return true
+  }
   if (MODE === 'relay' || current.busy) return false
   fs.rmSync(SESSION_FILE, { force: true })
   setStatus({ busy: false })

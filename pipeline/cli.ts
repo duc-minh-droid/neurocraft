@@ -72,10 +72,10 @@ const [cmd, ...args] = positionals
 async function doSpawn(meta: AssetMeta) {
   const at = await resolveAt(f.at)
   await step('spawn', 'Placing it in the world', async (s) => {
-    const file = path.relative(process.cwd(), await spawn(meta, { name: f.name, at, force: f.force }))
+    const id = await spawn(meta, { name: f.name, at, force: f.force })
     s.done(`Placed at (${at[0]}, ${at[1]})`)
-    s.focus(f.name ?? meta.id)
-    console.log(`spawned ${file}`)
+    s.focus(id)
+    console.log(`spawned world object "${id}"`)
   })
 }
 

@@ -64,7 +64,8 @@ export function ChatBar() {
     }
   }
 
-  const statusText = error ?? (relay ? listener.text : status.busy ? 'Devin is working…' : 'Ready')
+  const statusText = error ?? (relay ? listener.text : status.busy ? 'Working…' : '')
+  const showStatus = !!error || (relay ? status.listener !== 'offline' || !!status.pending : status.busy || !!status.pending)
 
   return (
     <div className="nc-chatbar nc-glass">
@@ -87,18 +88,18 @@ export function ChatBar() {
           </button>
         )}
       </div>
-      <div className="nc-chatbar-status" style={!error && relay && status.listener === 'offline' && !status.pending ? { display: 'none' } : undefined}>
+      <div className="nc-chatbar-status" style={showStatus ? undefined : { display: 'none' }}>
         <div className="nc-dot" style={{ background: error ? '#f85149' : relay ? listener.color : status.busy ? '#58a6ff' : '#3fb950' }} />
         <span className="nc-meta" style={{ flex: 1 }}>
           {statusText}
-          {relay && !!status.pending && ` · ${status.pending} queued`}
+          {!!status.pending && ` · ${status.pending} queued`}
         </span>
         {relay && !!status.pending && (
           <button className="nc-link" title="Remove messages Devin hasn't picked up yet" onClick={() => void post('/__nc/chat/cancel')}>
             clear queue
           </button>
         )}
-        {!relay && status.sessionId && !status.busy && (
+        {status.mode === 'cli' && status.sessionId && !status.busy && (
           <button className="nc-link" title="Start a fresh Devin session (forgets the conversation)" onClick={() => void post('/__nc/chat/reset')}>
             new chat
           </button>

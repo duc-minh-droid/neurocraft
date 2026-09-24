@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "time": "sunset",
+  "objects": [
+    {
+      "id": "red-dragon",
+      "asset": "red-dragon",
+      "label": "red dragon",
+      "at": [
+        -30,
+        75
+      ],
+      "height": 18,
+      "behavior": {
+        "type": "fly",
+        "radius": 15,
+        "altitude": 25,
+        "speed": 9
+      }
+    },
+    {
+      "id": "man",
+      "asset": "man",
+      "label": "man",
+      "at": [
+        0,
+        0
+      ],
+      "height": 9,
+      "clip": "Run",
+      "count": 4,
+      "behavior": {
+        "type": "drive",
+        "radius": 12,
+        "speed": 7
+      }
+    },
+    {
+      "id": "small-car",
+      "asset": "small-car",
+      "label": "small blue car",
+      "at": [
+        -28.3,
+        -49
+      ],
+      "height": 1.6,
+      "behavior": {
+        "type": "drive",
+        "radius": 12,
+        "speed": 6
+      },
+      "bones": [
+        {
+          "type": "spinNodes",
+          "match": "^[FR][LR]_Wheel$",
+          "speed": 8,
+          "axis": "x"
+        }
+      ]
+    },
+    {
+      "id": "fox",
+      "asset": "fox",
+      "label": "fox",
+      "at": [
+        6,
+        4
+      ],
+      "height": 1.2,
+      "clip": "Walk",
+      "behavior": {
+        "type": "wander",
+        "radius": 8,
+        "speed": 1.2
+      }
+    },
+    {
+      "id": "flying-fox",
+      "asset": "fox",
+      "label": "red flying fox",
+      "at": [
+        0,
+        0
+      ],
+      "height": 2,
+      "clip": "Run",
+      "tint": "#c1121f",
+      "behavior": {
+        "type": "fly",
+        "radius": 14,
+        "altitude": 6,
+        "speed": 7
+      },
+      "bones": [
+        {
+          "type": "wiggle",
+          "match": "Tail",
+          "amplitude": 0.3,
+          "frequency": 2
+        }
+      ]
+    },
+    {
+      "id": "pine-forest",
+      "asset": "pine",
+      "label": "pine forest",
+      "at": [
+        -30,
+        -20
+      ],
+      "height": 7,
+      "count": 40,
+      "scatter": {
+        "radius": 28,
+        "spacing": 4,
+        "seed": 7,
+        "scaleMin": 0.8,
+        "scaleMax": 1.2
+      },
+      "behavior": {
+        "type": "sway"
+      }
+    },
+    {
+      "id": "rocks",
+      "asset": "rock",
+      "label": "rocks",
+      "at": [
+        0,
+        0
+      ],
+      "height": 1.2,
+      "count": 160,
+      "scatter": {
+        "radius": 185,
+        "spacing": 5,
+        "seed": 11,
+        "scaleMin": 0.5,
+        "scaleMax": 3
+      }
+    },
+    {
+      "id": "castle",
+      "asset": "castle",
+      "label": "castle",
+      "at": [
+        -30,
+        75
+      ],
+      "height": 15
+    },
+    {
+      "id": "wolf",
+      "asset": "wolf",
+      "label": "wolf",
+      "at": [
+        -56.3,
+        71.1
+      ],
+      "height": 0.9,
+      "count": 5,
+      "scatter": {
+        "radius": 4,
+        "spacing": 0.7200000000000001
+      },
+      "behavior": {
+        "type": "wander",
+        "radius": 10,
+        "speed": 2
+      }
+    }
+  ]
+}

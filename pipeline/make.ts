@@ -3,6 +3,7 @@ import path from 'node:path'
 import type { Document } from '@gltf-transform/core'
 import type { AssetMeta, AssetSource, Kind, RigType } from '../shared/meta.ts'
 import { step, type StepHandle } from './activity.ts'
+import { writeAssetIndex } from './assetIndex.ts'
 import { DEFAULT_ANIMATIONS, PROFILES, clipName, toPreset } from './profiles.ts'
 import { Tripo, modelUrl, previewUrl, type OnProgress, type TripoTask } from './providers/tripo.ts'
 import { fetchModel } from './providers/sketchfab.ts'
@@ -187,6 +188,7 @@ async function finalize(doc: Document, base: Omit<AssetMeta, 'bones' | 'nodes' |
     await writeGlb(file, doc)
     const meta: AssetMeta = { ...base, ...inspect(doc), file: 'model.glb', createdAt: new Date().toISOString() }
     await writeJson(metaPath(base.id), meta)
+    writeAssetIndex()
     s.done(`Ready (${meta.triangles.toLocaleString()} triangles, ${mb((await fs.stat(file)).size)})`)
     return meta
   })

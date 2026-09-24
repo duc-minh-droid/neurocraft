@@ -4,22 +4,32 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Sky } from '@react-three/drei'
 import { Terrain } from './Terrain'
 import { cameraDirector, entities, findEntity, report, setState } from '../engine/store'
+import type { TimeOfDay } from '../../shared/world'
 
-/** Lighting presets. Change TIME to switch the whole mood of the world. */
-const TIMES = {
+/** Lighting presets, selected by world.json `time`. */
+const TIMES: Record<TimeOfDay, {
+  sun: readonly [number, number, number]
+  lightPos: readonly [number, number, number]
+  sky: string
+  fog: string
+  skyTop: string
+  ground: string
+  ambient: number
+  light: string
+  intensity: number
+  turbidity: number
+  rayleigh: number
+  water: string
+}> = {
   day: { sun: [80, 120, 40], lightPos: [80, 120, 40], sky: '#9cc7e8', fog: '#b8d4ea', skyTop: '#dbeeff', ground: '#4a5a3a', ambient: 0.8, light: '#ffffff', intensity: 2.2, turbidity: 4, rayleigh: 1.2, water: '#2b6f9e' },
   sunset: { sun: [-160, 14, -90], lightPos: [-160, 40, -90], sky: '#f2a36b', fog: '#e9a27a', skyTop: '#ffc9a1', ground: '#3b3144', ambient: 0.75, light: '#ffb070', intensity: 2.4, turbidity: 8, rayleigh: 3, water: '#3d5f8a' },
   night: { sun: [-60, -30, -100], lightPos: [60, 90, 100], sky: '#0b1426', fog: '#0e1a30', skyTop: '#2a3b66', ground: '#0c0f18', ambient: 0.35, light: '#9fb6ff', intensity: 0.6, turbidity: 1, rayleigh: 0.2, water: '#16284a' },
-} as const
-
-const TIME: keyof typeof TIMES = 'sunset'
-const LOOK = TIMES[TIME]
-const SUN = new THREE.Vector3(...LOOK.sun)
-/** Where the shadow-casting light sits (the moon at night, since the sun is below the horizon). */
-const LIGHT_POS = new THREE.Vector3(...LOOK.lightPos)
+}
 
 /** Every 2s, report live entity world transforms so the CLI agent can reason about "next to the house". */
 function SceneReporter() {
+  const camera = useThree((s) => s.camera)
+  const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3 } | null
   useEffect(() => {
     const p = new THREE.Vector3()
     const id = setInterval(() => {
@@ -27,10 +37,11 @@ function SceneReporter() {
         object.getWorldPosition(p)
         return { id: key, asset, position: p.toArray().map(r), size: size.map(r) }
       })
-      report('scene', { entities: list })
-    }, 2000)
+      const cam = { position: camera.position.toArray().map(r), target: (controls?.target ?? new THREE.Vector3()).toArray().map(r) }
+      report('scene', { entities: list, camera: cam })
+    }, 1500)
     return () => clearInterval(id)
-  }, [])
+  }, [camera, controls])
   return null
 }
 
@@ -75,7 +86,8 @@ function CameraDirector() {
     controls.autoRotate = cameraDirector.autoRotate && glide.t < 0
     controls.autoRotateSpeed = 0.5
     const { focusId, requestedAt } = cameraDirector
-    if (focusId && requestedAt !== glide.handled) {
+    // Small delay: the world update that moves/creates the object can arrive just after the focus request.
+    if (focusId && requestedAt !== glide.handled && performance.now() - requestedAt > 500) {
       const e = findEntity(focusId)
       if (e) {
         glide.handled = requestedAt
@@ -103,7 +115,11 @@ function CameraDirector() {
   return null
 }
 
-export function World() {
+export function World({ time }: { time: TimeOfDay }) {
+  const LOOK = TIMES[time] ?? TIMES.day
+  const SUN = useMemo(() => new THREE.Vector3(...LOOK.sun), [LOOK])
+  /** Where the shadow-casting light sits (the moon at night, since the sun is below the horizon). */
+  const LIGHT_POS = useMemo(() => new THREE.Vector3(...LOOK.lightPos), [LOOK])
   const pick = (p: THREE.Vector3) => {
     const cursor: [number, number, number] = [r(p.x), r(p.y), r(p.z)]
     setState({ cursor })

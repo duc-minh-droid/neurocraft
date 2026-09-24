@@ -42,8 +42,16 @@ type NcWindow = { __nc: { autoRotate: (on: boolean) => void; focus: (id: string)
 
 const panelHead = (page: Page) => page.locator('.nc-act-head').innerText().catch(() => '')
 
+/** Waits until the in-page agent is idle (agent mode reports busy/pending); falls back to the panel for relay mode. */
 async function waitForWork(page: Page, timeoutS: number) {
   const start = Date.now()
+  await sleep(500)
+  while (Date.now() - start < timeoutS * 1000) {
+    const s = (await fetch(new URL('/__nc/chat/status', f.url)).then((r) => r.json())) as { mode: string; busy: boolean; pending?: number }
+    if (s.mode !== 'agent') break
+    if (!s.busy && !s.pending) return
+    await sleep(300)
+  }
   while (Date.now() - start < 20_000 && !(await panelHead(page)).includes('Working')) await sleep(250)
   while (Date.now() - start < timeoutS * 1000 && (await panelHead(page)).includes('Working')) await sleep(500)
 }
@@ -79,7 +87,7 @@ function cut(raw: string, marks: Marks, name: string, workS: number) {
   execFileSync(ff, ['-y', '-i', raw, '-filter_complex', filter, '-map', '[out]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-preset', 'slow', '-movflags', '+faststart', mp4], { stdio: 'ignore' })
   execFileSync(
     ff,
-    ['-y', '-i', mp4, '-vf', 'fps=9,scale=720:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=96:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle', gif],
+    ['-y', '-i', mp4, '-vf', 'setpts=PTS/1.3,fps=7,scale=520:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle', gif],
     { stdio: 'ignore' },
   )
   const size = (p: string) => +(fs.statSync(p).size / 1e6).toFixed(1)

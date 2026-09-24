@@ -33,7 +33,7 @@ export const CHAT_EVENT = 'nc:chat'
 
 export interface ChatStatus {
   /** relay = messages go to the Devin chat that is listening via `nc inbox --wait`; cli = spawn `devin -p`. */
-  mode: 'relay' | 'cli'
+  mode: 'agent' | 'relay' | 'cli'
   busy: boolean
   /** Title of the run the in-page agent is working on. */
   run?: string
