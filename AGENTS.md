@@ -9,7 +9,7 @@ to the page over its websocket, so edits appear in about a second with no reload
 - `npm run typecheck`, `npm test`, `npm run build`: verification
 - `npx tsx scripts/say.ts "msg" ["msg"...]`: send chat messages to the running world and print each run's steps (the fastest way to test the agent)
 - `npx tsx scripts/snap.ts out.png [url] [waitMs]`: headless screenshot (`?follow=<entityId>` frames an object)
-- `npx tsx scripts/record-demo.ts --name demo --prompt "..." [--prompt ...]`: record the real flow to `docs/media/<name>.mp4/.gif` (waiting is fast-forwarded; `--recut` re-cuts the last raw take)
+- `npx tsx scripts/record-demo.ts --name demo --prompt "..." [--prompt ...]`: record the real flow. It captures sharp compositor frames (CDP screencast) and writes `docs/media/<name>.webp` (1280px master), `.mp4`, and `.gif` for the README (800px/10fps by default, `--gif-width/--gif-fps/--gif-speed`; keep it well under GitHub's 100 MB limit). Waiting is fast-forwarded; `--recut` re-cuts the last raw take without recording again.
 - `npm run nc -- <cmd>`: low-level asset pipeline CLI (search, make, animate, retexture, balance, log, inbox)
 - Keys live in `.env`: `GROQ_API_KEY` (agent), `SKETCHFAB_API_TOKEN` (library downloads), `TRIPO_API_KEY` (optional generation). Never print or commit them.
 

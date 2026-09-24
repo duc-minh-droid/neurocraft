@@ -13,8 +13,8 @@
       "height": 18,
       "behavior": {
         "type": "fly",
-        "radius": 15,
-        "altitude": 25,
+        "radius": 30,
+        "altitude": 18,
         "speed": 9
       }
     },
@@ -40,8 +40,8 @@
       "asset": "small-car",
       "label": "small blue car",
       "at": [
-        -28.3,
-        -49
+        5,
+        15
       ],
       "height": 1.6,
       "behavior": {
@@ -154,8 +154,8 @@
       "asset": "wolf",
       "label": "wolf",
       "at": [
-        -56.3,
-        71.1
+        -56.5,
+        71.6
       ],
       "height": 0.9,
       "count": 5,
@@ -165,7 +165,7 @@
       },
       "behavior": {
         "type": "wander",
-        "radius": 10,
+        "radius": 12,
         "speed": 2
       }
     }

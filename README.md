@@ -8,7 +8,7 @@ A living 3D world you shape by typing. Ask for a castle, a dragon, a pack of wol
 
 <img src="docs/media/demo.gif" alt="Typing 'a castle on the hill over there' makes a castle appear on a hill; the dragon grows and circles it; a wolf pack roams nearby; the world turns to golden sunset" width="100%" />
 
-<sub>Real, unscripted run: an AI handled all four requests, with only the waiting fast-forwarded. <a href="docs/media/demo.mp4">Watch the full-quality video</a>.</sub>
+<sub>Real, unscripted run: an AI handled all four requests, with only the waiting fast-forwarded. Full resolution: <a href="docs/media/demo.webp">animated WebP</a> · <a href="docs/media/demo.mp4">MP4</a>.</sub>
 
 </div>
 

@@ -1,8 +1,8 @@
 /**
  * Records a demo clip of the real flow: types prompts into the chat bar, waits for the world to change, orbits the camera.
- *   npx tsx scripts/record-demo.ts --name castle --prompt "add a castle on the hill" [--prompt "..."] [--hold 5]
- * Someone (Devin, listening via `nc inbox --wait`) must handle the prompts while this runs.
- * Outputs docs/media/<name>.mp4 and docs/media/<name>.gif.
+ *   npx tsx scripts/record-demo.ts --name demo --prompt "a castle on the hill" [--prompt "..."] [--hold 5]
+ * Frames are captured straight from the browser compositor (CDP screencast, high-quality JPEG) instead of Playwright's
+ * low-bitrate video, then cut trailer-style. Outputs docs/media/<name>.webp (sharp master), .mp4 and .gif (for the README).
  */
 import { execFileSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
@@ -29,6 +29,10 @@ const { values: f } = parseArgs({
     recut: { type: 'boolean', default: false },
     /** JSON [{prompt, cmd}]: type each prompt, then run its real pipeline commands directly. */
     steps: { type: 'string' },
+    /** README GIF width and frame rate (quality vs file size). */
+    'gif-width': { type: 'string', default: '800' },
+    'gif-fps': { type: 'string', default: '10' },
+    'gif-speed': { type: 'string', default: '1.25' },
   },
 })
 
@@ -82,17 +86,55 @@ function cut(raw: string, marks: Marks, name: string, workS: number) {
     parts.map((s, i) => `[0:v]trim=start=${s.from.toFixed(2)}:end=${s.to.toFixed(2)},setpts=(PTS-STARTPTS)/${s.speed.toFixed(3)}[v${i}]`).join(';') +
     `;${parts.map((_, i) => `[v${i}]`).join('')}concat=n=${parts.length}:v=1:a=0,fps=25[out]`
   const ff = ffmpegPath as unknown as string
+  const run = (args: string[]) => execFileSync(ff, ['-y', '-loglevel', 'error', ...args], { stdio: 'inherit' })
+  const master = path.join(RAW_DIR, `${name}.cut.mp4`)
+  const webp = path.join(OUT, `${name}.webp`)
   const mp4 = path.join(OUT, `${name}.mp4`)
   const gif = path.join(OUT, `${name}.gif`)
-  execFileSync(ff, ['-y', '-i', raw, '-filter_complex', filter, '-map', '[out]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '24', '-preset', 'slow', '-movflags', '+faststart', mp4], { stdio: 'ignore' })
-  execFileSync(
-    ff,
-    ['-y', '-i', mp4, '-vf', 'setpts=PTS/1.3,fps=7,scale=520:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle', gif],
-    { stdio: 'ignore' },
-  )
+  // Near-lossless cut master; every deliverable is derived from it.
+  run(['-i', raw, '-filter_complex', filter, '-map', '[out]', '-c:v', 'libx264', '-pix_fmt', 'yuv444p', '-crf', '10', '-preset', 'medium', master])
+  run(['-i', master, '-vf', 'fps=15', '-c:v', 'libwebp_anim', '-lossless', '0', '-quality', '82', '-compression_level', '5', '-loop', '0', webp])
+  run(['-i', master, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'slow', '-movflags', '+faststart', mp4])
+  // README GIF from the sharp master: lanczos scaling, per-clip palette, ordered dithering (compresses far better than
+  // error diffusion on a moving camera), slightly sped up to keep it well under GitHub's 100 MB file limit.
+  run([
+    '-i',
+    master,
+    '-vf',
+    `setpts=PTS/${f['gif-speed']},fps=${f['gif-fps']},scale=${f['gif-width']}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`,
+    gif,
+  ])
   const size = (p: string) => +(fs.statSync(p).size / 1e6).toFixed(1)
   const seconds = parts.reduce((s, p) => s + (p.to - p.from) / p.speed, 0)
-  return { mp4, gif, mp4MB: size(mp4), gifMB: size(gif), seconds: +seconds.toFixed(1) }
+  return { webp, mp4, gif, webpMB: size(webp), mp4MB: size(mp4), gifMB: size(gif), seconds: +seconds.toFixed(1) }
+}
+
+/** Captures compositor frames via CDP screencast; returns a stop() that writes a constant-30fps near-lossless video. */
+async function startCapture(page: Page, dir: string, t0: number) {
+  const cdp = await page.context().newCDPSession(page)
+  const frames: { file: string; t: number }[] = []
+  cdp.on('Page.screencastFrame', ({ data, metadata, sessionId }: { data: string; metadata: { timestamp?: number }; sessionId: number }) => {
+    const file = path.join(dir, `f${String(frames.length).padStart(6, '0')}.jpg`)
+    fs.writeFileSync(file, Buffer.from(data, 'base64'))
+    frames.push({ file, t: metadata.timestamp ? metadata.timestamp * 1000 - t0 : Date.now() - t0 })
+    void cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {})
+  })
+  await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 95, maxWidth: W, maxHeight: H, everyNthFrame: 1 })
+  return async (out: string, endMs: number) => {
+    await cdp.send('Page.stopScreencast').catch(() => {})
+    // Concat list with real frame durations (frames only arrive when the page repaints).
+    const lines: string[] = []
+    frames.forEach((fr, i) => {
+      const start = i === 0 ? 0 : fr.t
+      const next = frames[i + 1]?.t ?? endMs
+      lines.push(`file '${fr.file.replace(/\\/g, '/')}'`, `duration ${Math.max(0.001, (next - start) / 1000).toFixed(4)}`)
+    })
+    lines.push(`file '${frames.at(-1)!.file.replace(/\\/g, '/')}'`)
+    const list = path.join(dir, 'frames.txt')
+    fs.writeFileSync(list, lines.join('\n'))
+    execFileSync(ffmpegPath as unknown as string, ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list, '-vf', `fps=30,scale=${W}:${H}`, '-c:v', 'libx264', '-pix_fmt', 'yuv444p', '-crf', '8', '-preset', 'fast', out], { stdio: 'inherit' })
+    return frames.length
+  }
 }
 
 const RAW_DIR = path.join(ROOT, '.cache', 'recordings')
@@ -109,23 +151,24 @@ function run(cmd: string, R: string) {
 async function main() {
   fs.mkdirSync(OUT, { recursive: true })
   fs.mkdirSync(RAW_DIR, { recursive: true })
-  const rawPath = path.join(RAW_DIR, `${f.name}.webm`)
+  const rawPath = path.join(RAW_DIR, `${f.name}.raw.mp4`)
   const marksPath = path.join(RAW_DIR, `${f.name}.json`)
   if (f.recut) {
     console.log(JSON.stringify(cut(rawPath, JSON.parse(fs.readFileSync(marksPath, 'utf8')) as Marks, f.name, Number(f.work))))
     return
   }
-  const videoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nc-video-'))
+  const frameDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nc-frames-'))
   const browser = await chromium.launch({
     channel: 'msedge',
     headless: !f.headed,
     args: ['--ignore-gpu-blocklist', '--enable-gpu-rasterization', '--use-angle=d3d11'],
   })
-  const context = await browser.newContext({ viewport: { width: W, height: H }, recordVideo: { dir: videoDir, size: { width: W, height: H } } })
+  const context = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })
   const page = await context.newPage()
   const t0 = Date.now()
   const now = () => (Date.now() - t0) / 1000
   const marks: Marks = { prompts: [], end: 0 }
+  const stopCapture = await startCapture(page, frameDir, t0)
   await page.goto(f.url)
   await page.waitForSelector('.nc-chatbar textarea')
   await sleep(2500)
@@ -164,13 +207,12 @@ async function main() {
   }
   marks.end = now()
 
-  const video = page.video()
+  const frames = await stopCapture(rawPath, marks.end * 1000)
   await context.close()
   await browser.close()
-  fs.copyFileSync((await video!.path()), rawPath)
   fs.writeFileSync(marksPath, JSON.stringify(marks, null, 2))
-  fs.rmSync(videoDir, { recursive: true, force: true })
-  console.log(JSON.stringify(cut(rawPath, marks, f.name, Number(f.work))))
+  fs.rmSync(frameDir, { recursive: true, force: true })
+  console.log(JSON.stringify({ frames, ...cut(rawPath, marks, f.name, Number(f.work)) }))
 }
 
 main().catch((e) => {
